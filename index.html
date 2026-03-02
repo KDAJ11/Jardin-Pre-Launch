@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jardin Lagos — Coming Soon</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #f5f0e8; --sage: #8a9e7a; --deep-green: #2d4a35;
+    --blush: #e8a89c; --terracotta: #c96b4a; --warm-white: #faf7f2;
+    --gold: #c9a96e; --text-dark: #1a2e1f; --text-mid: #4a5e46;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Jost', sans-serif; background: var(--warm-white); color: var(--text-dark); overflow-x: hidden; cursor: none; }
+
+  /* CURSOR */
+  .cursor { width: 8px; height: 8px; background: var(--deep-green); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; }
+  .cursor-ring { width: 32px; height: 32px; border: 1px solid var(--sage); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.3s ease; transform: translate(-50%,-50%); }
+  .cursor-ring.hovered { transform: translate(-50%,-50%) scale(2); border-color: var(--blush); opacity: 0.6; }
+  .petal-trail { position: fixed; pointer-events: none; z-index: 9997; font-size: 0.7rem; animation: petalFade 0.9s ease forwards; }
+  @keyframes petalFade { 0% { opacity: 0.8; transform: scale(1) rotate(0deg); } 100% { opacity: 0; transform: scale(0.2) rotate(200deg) translateY(-25px); } }
+
+  /* LOADER */
+  .loader { position: fixed; inset: 0; background: var(--deep-green); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.8s ease, visibility 0.8s ease; }
+  .loader.hidden { opacity: 0; visibility: hidden; }
+  .loader-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5rem,7vw,5rem); color: var(--cream); font-weight: 300; letter-spacing: 0.4em; animation: breathe 2s ease-in-out infinite; }
+  .loader-bar { width: 120px; height: 1px; background: rgba(138,158,122,0.2); margin-top: 2rem; position: relative; overflow: hidden; }
+  .loader-bar::after { content: ''; position: absolute; inset: 0; background: var(--sage); transform: translateX(-100%); animation: loadBar 2.2s ease forwards; }
+  @keyframes loadBar { to { transform: translateX(0); } }
+  .loader-sub { font-size: 0.6rem; color: var(--sage); letter-spacing: 0.5em; text-transform: uppercase; margin-top: 1.5rem; opacity: 0; animation: fadeUp 0.8s ease 0.8s forwards; }
+  @keyframes breathe { 0%,100%{opacity:0.3} 50%{opacity:1} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+  /* NAV */
+  nav { position: fixed; top:0;left:0;right:0; z-index:100; padding:2rem 3rem; display:flex; align-items:center; justify-content:space-between; transition: background 0.5s, padding 0.5s; }
+  nav.scrolled { background: rgba(250,247,242,0.96); backdrop-filter: blur(12px); padding: 1.2rem 3rem; border-bottom: 1px solid rgba(138,158,122,0.15); }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size:1.4rem; font-weight:300; color:var(--deep-green); letter-spacing:0.3em; }
+  .nav-right { display:flex; align-items:center; gap:2rem; }
+  .nav-label { font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); }
+  .nav-reserve { padding:0.6rem 1.5rem; border:1px solid var(--deep-green); font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--deep-green); background:none; cursor:none; text-decoration:none; transition:background 0.3s, color 0.3s; }
+  .nav-reserve:hover { background:var(--deep-green); color:var(--cream); }
+
+  /* FLOATING BUTTONS */
+  .sound-btn { position:fixed; bottom:2rem; left:2rem; z-index:200; width:44px; height:44px; border:1px solid rgba(45,74,53,0.25); background:rgba(250,247,242,0.92); backdrop-filter:blur(8px); cursor:none; display:flex; align-items:center; justify-content:center; transition:border-color 0.3s,background 0.3s; opacity:0; animation:fadeUp 0.5s ease 3s forwards; }
+  .sound-btn:hover { border-color:var(--sage); }
+  .sound-btn.playing { border-color:var(--sage); background:var(--deep-green); }
+  .sound-label { position:fixed; bottom:2.15rem; left:4.5rem; z-index:200; font-size:0.45rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); opacity:0; animation:fadeUp 0.5s ease 3.2s forwards; white-space:nowrap; }
+  .whatsapp-btn { position:fixed; bottom:2rem; right:2rem; z-index:200; width:52px; height:52px; background:#25D366; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:none; text-decoration:none; box-shadow:0 4px 20px rgba(37,211,102,0.35); transition:transform 0.3s,box-shadow 0.3s; opacity:0; animation:fadeUp 0.5s ease 3.4s forwards; }
+  .whatsapp-btn:hover { transform:scale(1.1); box-shadow:0 8px 30px rgba(37,211,102,0.5); }
+  .whatsapp-btn svg { width:28px; height:28px; fill:white; }
+  .whatsapp-label { position:fixed; bottom:2.6rem; right:5.5rem; z-index:200; font-size:0.45rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); opacity:0; animation:fadeUp 0.5s ease 3.6s forwards; white-space:nowrap; }
+
+  /* HERO */
+  .hero { height:100vh; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 60% 80% at 20% 50%,rgba(138,158,122,.28) 0%,transparent 60%), radial-gradient(ellipse 50% 60% at 80% 30%,rgba(232,168,156,.22) 0%,transparent 50%), radial-gradient(ellipse 40% 40% at 60% 80%,rgba(45,74,53,.1) 0%,transparent 50%), var(--warm-white); }
+  .botanical-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .leaf { position:absolute; opacity:0; animation:leafReveal 1.5s ease forwards; }
+  @keyframes leafReveal { to{opacity:1} }
+  .hero-content { position:relative; z-index:2; text-align:center; padding:2rem; }
+  .hero-eyebrow { font-size:0.6rem; letter-spacing:0.6em; text-transform:uppercase; color:var(--sage); margin-bottom:1.5rem; opacity:0; animation:fadeUp 1s ease 1.2s forwards; }
+  .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(4.5rem,13vw,11rem); font-weight:300; line-height:0.9; color:var(--deep-green); overflow:hidden; }
+  .hero-title .line { display:block; transform:translateY(100%); animation:slideUp 1.2s cubic-bezier(.16,1,.3,1) forwards; }
+  .hero-title .line:nth-child(1){animation-delay:.8s}
+  .hero-title .line:nth-child(2){animation-delay:1s; font-style:italic; color:var(--terracotta)}
+  .hero-sub { font-size:0.65rem; letter-spacing:0.5em; text-transform:uppercase; color:var(--text-mid); margin-top:2rem; opacity:0; animation:fadeUp 1s ease 1.6s forwards; }
+  .hero-location { display:inline-flex; align-items:center; gap:0.5rem; margin-top:1rem; font-size:0.6rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--sage); opacity:0; animation:fadeUp 1s ease 1.8s forwards; }
+  .hero-location::before,.hero-location::after { content:''; display:block; width:30px; height:1px; background:var(--sage); }
+  .scroll-hint { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:0.5rem; opacity:0; animation:fadeUp 1s ease 2.2s forwards; }
+  .scroll-line { width:1px; height:50px; background:linear-gradient(to bottom,var(--sage),transparent); animation:scrollPulse 2s ease-in-out infinite; }
+  .scroll-text { font-size:0.5rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--sage); }
+  @keyframes scrollPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* MARQUEE */
+  .marquee-section { overflow:hidden; padding:1.75rem 0; background:var(--deep-green); border-top:1px solid rgba(138,158,122,.15); }
+  .marquee-track { display:flex; gap:4rem; animation:marquee 22s linear infinite; width:max-content; }
+  .marquee-item { font-family:'Cormorant Garamond',serif; font-size:0.85rem; font-style:italic; color:rgba(138,158,122,.55); letter-spacing:0.2em; white-space:nowrap; }
+  .marquee-dot { color:var(--terracotta); font-style:normal; }
+  @keyframes marquee { to{transform:translateX(-50%)} }
+
+  /* COUNTDOWN */
+  .countdown-section { padding:6rem 2rem; text-align:center; background:var(--deep-green); position:relative; overflow:hidden; }
+  .countdown-section::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(138,158,122,.12) 0%,transparent 60%); }
+  .countdown-label { font-size:0.55rem; letter-spacing:0.6em; text-transform:uppercase; color:var(--sage); margin-bottom:3rem; position:relative; }
+  .countdown-grid { display:flex; gap:clamp(1rem,4vw,3rem); justify-content:center; align-items:center; position:relative; }
+  .countdown-item { text-align:center; }
+  .countdown-num { font-family:'Cormorant Garamond',serif; font-size:clamp(3.5rem,9vw,6.5rem); font-weight:300; color:var(--cream); line-height:1; }
+  .countdown-unit { font-size:0.5rem; letter-spacing:0.5em; text-transform:uppercase; color:var(--sage); margin-top:0.5rem; }
+  .countdown-sep { font-family:'Cormorant Garamond',serif; font-size:3rem; color:var(--sage); opacity:0.5; line-height:1; margin-bottom:1.5rem; animation:blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:.5} 50%{opacity:.1} }
+  .opening-date { margin-top:3rem; font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,3vw,1.5rem); color:var(--gold); font-style:italic; font-weight:300; position:relative; }
+
+  /* GALLERY */
+  .gallery-section { padding:6rem 0; background:var(--cream); overflow:hidden; }
+  .gallery-header { padding:0 clamp(2rem,5vw,5rem); margin-bottom:3rem; }
+  .gallery-scroll { display:flex; gap:1.5rem; padding:0 clamp(2rem,5vw,5rem); overflow-x:auto; cursor:grab; scrollbar-width:none; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+  .gallery-scroll::-webkit-scrollbar { display:none; }
+  .gallery-scroll.dragging { cursor:grabbing; }
+  .gallery-card { flex:0 0 clamp(260px,35vw,420px); height:clamp(340px,50vw,520px); border-radius:2px; overflow:hidden; position:relative; scroll-snap-align:start; transition:transform 0.4s ease; }
+  .gallery-card:hover { transform:scale(1.02); }
+  .gallery-card-bg { position:absolute; inset:0; transition:transform 0.6s ease; }
+  .gallery-card:hover .gallery-card-bg { transform:scale(1.05); }
+  .gallery-card:nth-child(1) .gallery-card-bg { background:linear-gradient(135deg,rgba(138,158,122,.7),rgba(45,74,53,.95)),radial-gradient(ellipse at 40% 30%,rgba(232,168,156,.4),transparent 60%); }
+  .gallery-card:nth-child(2) .gallery-card-bg { background:linear-gradient(155deg,rgba(201,107,74,.6),rgba(45,74,53,.97)),radial-gradient(ellipse at 60% 40%,rgba(201,169,110,.4),transparent 60%); }
+  .gallery-card:nth-child(3) .gallery-card-bg { background:linear-gradient(125deg,rgba(232,168,156,.6),rgba(45,74,53,.93)),radial-gradient(ellipse at 30% 60%,rgba(138,158,122,.4),transparent 60%); }
+  .gallery-card:nth-child(4) .gallery-card-bg { background:linear-gradient(145deg,rgba(201,169,110,.5),rgba(26,46,31,.97)),radial-gradient(ellipse at 70% 30%,rgba(232,168,156,.3),transparent 60%); }
+  .gallery-card:nth-child(5) .gallery-card-bg { background:linear-gradient(165deg,rgba(45,74,53,.8),rgba(138,158,122,.9)),radial-gradient(ellipse at 50% 70%,rgba(201,107,74,.3),transparent 60%); }
+  .gallery-card-deco { position:absolute; top:1.5rem; right:1.5rem; width:70px; height:70px; opacity:0.18; }
+  .gallery-card-inner { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:2rem; }
+  .gallery-tag { font-size:0.5rem; letter-spacing:0.5em; text-transform:uppercase; color:rgba(245,240,232,.6); margin-bottom:0.5rem; }
+  .gallery-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; color:var(--cream); line-height:1.2; }
+  .gallery-hint { margin-top:2rem; text-align:center; font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--sage); padding:0 2rem; }
+
+  /* STORY */
+  .story-section { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; }
+  @media(max-width:768px){.story-section{grid-template-columns:1fr}}
+  .story-visual { position:relative; overflow:hidden; min-height:60vh; background:var(--deep-green); }
+  .story-visual-inner { position:absolute; inset:-20%; background:radial-gradient(ellipse 60% 70% at 40% 50%,rgba(138,158,122,.4),transparent 60%),radial-gradient(ellipse 40% 40% at 70% 30%,rgba(232,168,156,.3),transparent 50%),var(--deep-green); display:flex; align-items:center; justify-content:center; transition:transform .1s linear; }
+  .garden-illustration { width:80%; max-width:400px; opacity:0.9; }
+  .story-content { padding:clamp(3rem,8vw,7rem) clamp(2rem,5vw,5rem); display:flex; flex-direction:column; justify-content:center; background:var(--cream); }
+  .section-label { font-size:0.55rem; letter-spacing:0.6em; text-transform:uppercase; color:var(--sage); margin-bottom:2rem; }
+  .story-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(2.5rem,5vw,4rem); font-weight:300; line-height:1.1; color:var(--deep-green); margin-bottom:2rem; }
+  .story-heading em { font-style:italic; color:var(--terracotta); }
+  .story-body { font-size:0.85rem; line-height:1.9; color:var(--text-mid); font-weight:300; max-width:42ch; }
+  .story-accent { margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(138,158,122,.3); display:flex; gap:3rem; }
+  .story-stat-num { font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; color:var(--terracotta); line-height:1; }
+  .story-stat-label { font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--sage); margin-top:0.4rem; }
+
+  /* VENUES STRIP */
+  .venues-strip { display:flex; border-top:1px solid rgba(138,158,122,.2); border-bottom:1px solid rgba(138,158,122,.2); }
+  @media(max-width:600px){.venues-strip{flex-direction:column}}
+  .venue-item { flex:1; padding:2rem 1.5rem; text-align:center; border-right:1px solid rgba(138,158,122,.15); overflow:hidden; transition:background 0.4s; cursor:none; }
+  .venue-item:last-child { border-right:none; }
+  .venue-item:hover { background:rgba(138,158,122,.06); }
+  .venue-emoji { font-size:1.2rem; margin-bottom:0.75rem; opacity:0.8; }
+  .venue-name { font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); }
+  .venue-tag { margin-top:0.4rem; font-family:'Cormorant Garamond',serif; font-size:0.85rem; font-style:italic; color:var(--sage); }
+
+  /* MENU */
+  .menu-section { padding:8rem 2rem; background:var(--warm-white); text-align:center; }
+  .menu-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(2.5rem,6vw,5rem); font-weight:300; color:var(--deep-green); margin-bottom:1rem; }
+  .menu-heading em { font-style:italic; color:var(--terracotta); }
+  .menu-intro { font-size:0.75rem; letter-spacing:0.2em; color:var(--sage); margin-bottom:4rem; text-transform:uppercase; }
+  .menu-tabs { display:flex; justify-content:center; margin-bottom:4rem; border-bottom:1px solid rgba(138,158,122,.2); }
+  .menu-tab { padding:0.75rem 2rem; font-size:0.6rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); background:none; border:none; cursor:none; position:relative; transition:color 0.3s; }
+  .menu-tab.active { color:var(--deep-green); }
+  .menu-tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:var(--deep-green); }
+  .menu-tab:hover { color:var(--deep-green); }
+  .menu-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0; max-width:1100px; margin:0 auto; }
+  .menu-item { padding:2.5rem; border-bottom:1px solid rgba(138,158,122,.15); border-right:1px solid rgba(138,158,122,.15); text-align:left; position:relative; overflow:hidden; transition:background 0.4s; }
+  .menu-item:hover { background:rgba(138,158,122,.06); }
+  .menu-item::before { content:attr(data-num); position:absolute; top:1rem; right:1.5rem; font-family:'Cormorant Garamond',serif; font-size:4rem; color:rgba(138,158,122,.1); font-weight:300; line-height:1; }
+  .menu-item-tag { font-size:0.5rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--blush); margin-bottom:0.75rem; }
+  .menu-item-name { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:400; color:var(--deep-green); line-height:1.2; margin-bottom:0.75rem; }
+  .menu-item-desc { font-size:0.72rem; line-height:1.7; color:var(--text-mid); font-weight:300; }
+  .menu-item-price { margin-top:1.5rem; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--gold); }
+
+  /* EXPERIENCE */
+  .experience-section { padding:8rem 2rem; background:var(--cream); }
+  .experience-header { text-align:center; margin-bottom:6rem; }
+  .experience-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(2.5rem,6vw,4.5rem); font-weight:300; color:var(--deep-green); }
+  .experience-heading em { font-style:italic; color:var(--terracotta); }
+  .experience-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; max-width:1100px; margin:0 auto; }
+  @media(max-width:768px){.experience-grid{grid-template-columns:1fr}}
+  .exp-card { position:relative; overflow:hidden; border-radius:2px; }
+  .exp-card-inner { padding:3rem 2.5rem; height:380px; display:flex; flex-direction:column; justify-content:flex-end; position:relative; transition:transform 0.6s cubic-bezier(.16,1,.3,1); }
+  .exp-card:hover .exp-card-inner { transform:translateY(-5px); }
+  .exp-card:nth-child(1) .exp-card-inner { background:linear-gradient(to top,rgba(45,74,53,.95),rgba(45,74,53,.4) 50%,transparent),radial-gradient(ellipse 80% 60% at 30% 40%,rgba(138,158,122,.5),transparent 60%),var(--deep-green); }
+  .exp-card:nth-child(2) .exp-card-inner { background:linear-gradient(to top,rgba(45,74,53,.95),rgba(45,74,53,.4) 50%,transparent),radial-gradient(ellipse 70% 60% at 60% 30%,rgba(232,168,156,.5),transparent 60%),linear-gradient(135deg,var(--terracotta),var(--deep-green)); }
+  .exp-card:nth-child(3) .exp-card-inner { background:linear-gradient(to top,rgba(45,74,53,.95),rgba(45,74,53,.4) 50%,transparent),radial-gradient(ellipse 60% 60% at 70% 60%,rgba(201,169,110,.4),transparent 60%),linear-gradient(160deg,#1a2e1f,#2d4a35); }
+  .exp-icon { font-size:1.5rem; margin-bottom:1rem; opacity:0.8; }
+  .exp-card-label { font-size:0.5rem; letter-spacing:0.5em; text-transform:uppercase; color:var(--sage); margin-bottom:0.5rem; }
+  .exp-card-title { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300; color:var(--cream); line-height:1.2; margin-bottom:0.75rem; }
+  .exp-card-desc { font-size:0.7rem; line-height:1.7; color:rgba(245,240,232,.7); font-weight:300; }
+
+  /* QUOTES */
+  .quote-section { padding:10rem 2rem; background:var(--deep-green); text-align:center; position:relative; overflow:hidden; }
+  .quote-section::before { content:'"'; position:absolute; top:-3rem; left:50%; transform:translateX(-50%); font-family:'Cormorant Garamond',serif; font-size:clamp(12rem,25vw,22rem); color:rgba(138,158,122,.05); font-weight:300; line-height:1; pointer-events:none; }
+  .quote-carousel { max-width:800px; margin:0 auto; position:relative; }
+  .quote-slide { display:none; }
+  .quote-slide.active { display:block; animation:fadeUp .6s ease; }
+  blockquote { font-family:'Cormorant Garamond',serif; font-size:clamp(1.5rem,3.5vw,2.5rem); font-weight:300; font-style:italic; color:var(--cream); line-height:1.5; margin-bottom:2rem; }
+  .quote-source { font-size:0.55rem; letter-spacing:0.5em; text-transform:uppercase; color:var(--sage); }
+  .quote-dots { display:flex; gap:0.5rem; justify-content:center; margin-top:3rem; }
+  .quote-dot { width:5px; height:5px; border-radius:50%; background:rgba(138,158,122,.3); cursor:none; transition:background 0.3s; }
+  .quote-dot.active { background:var(--sage); }
+
+  /* SOCIAL */
+  .social-section { padding:5rem 2rem; background:var(--warm-white); text-align:center; border-top:1px solid rgba(138,158,122,.15); }
+  .social-label { font-size:0.55rem; letter-spacing:0.6em; text-transform:uppercase; color:var(--sage); margin-bottom:3rem; }
+  .social-stats { display:flex; justify-content:center; gap:clamp(2rem,6vw,6rem); flex-wrap:wrap; margin-bottom:4rem; }
+  .social-stat { text-align:center; }
+  .social-stat-num { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,5vw,3.5rem); font-weight:300; color:var(--deep-green); line-height:1; }
+  .social-stat-label { font-size:0.5rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-mid); margin-top:0.4rem; }
+  .social-links { display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; }
+  .social-link { display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1.5rem; border:1px solid rgba(138,158,122,.3); font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--text-mid); text-decoration:none; transition:border-color .3s,color .3s; cursor:none; }
+  .social-link:hover { border-color:var(--deep-green); color:var(--deep-green); }
+
+  /* WAITLIST */
+  .waitlist-section { padding:10rem 2rem; background:var(--deep-green); text-align:center; position:relative; overflow:hidden; }
+  .waitlist-section::before { content:'JARDIN'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Cormorant Garamond',serif; font-size:clamp(8rem,20vw,18rem); font-weight:300; color:rgba(138,158,122,.05); white-space:nowrap; pointer-events:none; letter-spacing:.1em; }
+  .waitlist-eyebrow { font-size:0.55rem; letter-spacing:0.6em; text-transform:uppercase; color:var(--sage); margin-bottom:2rem; position:relative; }
+  .waitlist-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(2.5rem,7vw,5.5rem); font-weight:300; color:var(--cream); line-height:1.1; margin-bottom:1.5rem; position:relative; }
+  .waitlist-heading em { font-style:italic; color:var(--blush); }
+  .waitlist-sub { font-size:0.75rem; color:rgba(245,240,232,.5); max-width:40ch; margin:0 auto 4rem; line-height:1.8; font-weight:300; position:relative; }
+  .waitlist-form { max-width:520px; margin:0 auto; position:relative; }
+  .form-fields { display:flex; flex-direction:column; background:rgba(245,240,232,.06); border:1px solid rgba(138,158,122,.25); }
+  .form-field { display:flex; border-bottom:1px solid rgba(138,158,122,.15); }
+  .form-field:last-of-type { border-bottom:none; }
+  .form-input { flex:1; padding:1.1rem 1.5rem; background:none; border:none; color:var(--cream); font-family:'Jost',sans-serif; font-size:0.8rem; font-weight:300; letter-spacing:0.05em; outline:none; }
+  .form-input::placeholder { color:rgba(245,240,232,.3); }
+  .form-select { flex:1; padding:1.1rem 1.5rem; background:transparent; border:none; color:rgba(245,240,232,.65); font-family:'Jost',sans-serif; font-size:0.8rem; font-weight:300; outline:none; -webkit-appearance:none; appearance:none; cursor:none; }
+  .form-select option { background:var(--deep-green); color:var(--cream); }
+  .form-btn { width:100%; padding:1.4rem 2rem; background:var(--sage); border:none; color:var(--deep-green); font-family:'Jost',sans-serif; font-size:0.6rem; font-weight:400; letter-spacing:0.5em; text-transform:uppercase; cursor:none; transition:background 0.3s; margin-top:1px; }
+  .form-btn:hover { background:var(--cream); }
+  .form-note { margin-top:1rem; font-size:0.5rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(138,158,122,.4); }
+  .form-counter { margin-top:0.75rem; font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:rgba(138,158,122,.5); }
+  .form-counter span { color:var(--gold); }
+  .form-success { display:none; padding:3rem 2rem; border:1px solid rgba(138,158,122,.3); background:rgba(138,158,122,.08); }
+  .form-success.visible { display:block; animation:fadeUp .5s ease; }
+  .form-success-icon { font-size:2rem; margin-bottom:1rem; }
+  .form-success-text { font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:var(--cream); font-style:italic; font-weight:300; }
+  .form-success-sub { margin-top:0.5rem; font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--sage); }
+
+  /* FOOTER */
+  footer { padding:4rem 2rem; background:var(--deep-green); text-align:center; border-top:1px solid rgba(138,158,122,.1); }
+  .footer-logo { font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; color:var(--cream); letter-spacing:0.3em; margin-bottom:0.5rem; }
+  .footer-sub { font-size:0.55rem; letter-spacing:0.5em; text-transform:uppercase; color:var(--sage); margin-bottom:3rem; }
+  .footer-links { display:flex; gap:2rem; justify-content:center; margin-bottom:3rem; flex-wrap:wrap; }
+  .footer-link { font-size:0.6rem; letter-spacing:0.3em; text-transform:uppercase; color:rgba(245,240,232,.35); text-decoration:none; transition:color .3s; }
+  .footer-link:hover { color:var(--cream); }
+  .footer-credit { font-size:0.5rem; letter-spacing:0.2em; color:rgba(138,158,122,.25); }
+  .footer-credit a { color:rgba(138,158,122,.5); text-decoration:none; transition:color .3s; }
+  .footer-credit a:hover { color:var(--sage); }
+
+  /* REVEALS */
+  .reveal { opacity:0; transform:translateY(30px); transition:opacity .9s ease, transform .9s cubic-bezier(.16,1,.3,1); }
+  .reveal.visible { opacity:1; transform:none; }
+  .reveal-delay-1{transition-delay:.1s} .reveal-delay-2{transition-delay:.2s} .reveal-delay-3{transition-delay:.35s} .reveal-delay-4{transition-delay:.5s}
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Loader -->
+<div class="loader" id="loader">
+  <div class="loader-text">Jardin</div>
+  <div class="loader-bar"></div>
+  <div class="loader-sub">Victoria Island · Lagos · Opening 2026</div>
+</div>
+
+<!-- Sound toggle -->
+<button class="sound-btn" id="soundBtn" onclick="toggleSound()" title="Ambient sound">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M9 18V5l12-2v13M6 18a3 3 0 100-6 3 3 0 000 6zm12-2a3 3 0 100-6 3 3 0 000 6z" stroke="#2d4a35" stroke-width="1.5" stroke-linecap="round" id="soundPath"/>
+  </svg>
+</button>
+<span class="sound-label">Ambient</span>
+
+<!-- WhatsApp -->
+<a class="whatsapp-btn" href="https://wa.me/2348000000000?text=Hi%2C%20I'd%20like%20to%20join%20the%20Jardin%20waitlist" target="_blank" title="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.531 5.85L.057 23.12a.5.5 0 00.611.637l5.44-1.425A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.025-1.384l-.36-.214-3.726.977.994-3.633-.234-.374A9.817 9.817 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg>
+</a>
+<span class="whatsapp-label">Chat on WhatsApp</span>
+
+<!-- Nav -->
+<nav id="nav">
+  <div class="nav-logo">JARDIN</div>
+  <div class="nav-right">
+    <span class="nav-label">VI · Lagos</span>
+    <a href="#waitlist" class="nav-reserve">Join Waitlist</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="botanical-layer">
+    <svg style="position:absolute;top:-5%;left:-5%;width:45%;opacity:0.35;animation-delay:1.5s" class="leaf" viewBox="0 0 400 500" fill="none"><path d="M200 480 C200 480 20 350 40 180 C60 10 200 20 200 20 C200 20 340 10 360 180 C380 350 200 480 200 480Z" fill="rgba(138,158,122,0.4)"/><path d="M200 480 L200 20" stroke="rgba(45,74,53,0.3)" stroke-width="1"/><path d="M200 300 C150 270 80 240 60 180" stroke="rgba(45,74,53,0.2)" stroke-width="0.5"/><path d="M200 300 C250 270 320 240 340 180" stroke="rgba(45,74,53,0.2)" stroke-width="0.5"/></svg>
+    <svg style="position:absolute;bottom:-10%;right:-5%;width:40%;opacity:0.3;animation-delay:1.8s;transform:scaleX(-1) rotate(15deg)" class="leaf" viewBox="0 0 400 500" fill="none"><path d="M200 480 C200 480 20 350 40 180 C60 10 200 20 200 20 C200 20 340 10 360 180 C380 350 200 480 200 480Z" fill="rgba(232,168,156,0.5)"/><path d="M200 480 L200 20" stroke="rgba(201,107,74,0.3)" stroke-width="1"/></svg>
+    <svg style="position:absolute;top:15%;right:8%;width:18%;opacity:0.2;animation-delay:2s" class="leaf" viewBox="0 0 200 300" fill="none"><ellipse cx="100" cy="150" rx="70" ry="120" fill="rgba(138,158,122,0.6)"/><path d="M100 30 L100 270" stroke="rgba(45,74,53,0.3)" stroke-width="1"/></svg>
+    <svg style="position:absolute;bottom:12%;left:8%;width:14%;opacity:0.2;animation-delay:2.2s;transform:rotate(-20deg)" class="leaf" viewBox="0 0 200 300" fill="none"><ellipse cx="100" cy="150" rx="60" ry="110" fill="rgba(201,169,110,0.6)"/></svg>
+  </div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Victoria Island · Lagos, Nigeria</div>
+    <h1 class="hero-title"><span class="line">Jardin</span><span class="line">Lagos</span></h1>
+    <div class="hero-sub">Restaurant &nbsp;·&nbsp; Spa &nbsp;·&nbsp; Events &nbsp;·&nbsp; Rooftop</div>
+    <div class="hero-location">Opening 2026</div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div><div class="scroll-text">Explore</div></div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <span class="marquee-item">Garden Dining <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Lagos, Nigeria <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Floral Interiors <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Private Events <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Luxury Spa <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Rooftop Dining <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Opening 2026 <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Victoria Island <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Garden Dining <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Lagos, Nigeria <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Floral Interiors <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Private Events <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Luxury Spa <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Rooftop Dining <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Opening 2026 <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Victoria Island <span class="marquee-dot">✦</span></span>
+  </div>
+</div>
+
+<!-- Countdown -->
+<section class="countdown-section">
+  <div class="countdown-label reveal">The Garden Opens In</div>
+  <div class="countdown-grid reveal reveal-delay-1">
+    <div class="countdown-item"><div class="countdown-num" id="days">00</div><div class="countdown-unit">Days</div></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-item"><div class="countdown-num" id="hours">00</div><div class="countdown-unit">Hours</div></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-item"><div class="countdown-num" id="minutes">00</div><div class="countdown-unit">Minutes</div></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-item"><div class="countdown-num" id="seconds">00</div><div class="countdown-unit">Seconds</div></div>
+  </div>
+  <div class="opening-date reveal reveal-delay-2">Victoria Island, Lagos — 2026</div>
+</section>
+
+<!-- Gallery -->
+<section class="gallery-section">
+  <div class="gallery-header">
+    <div class="section-label reveal">A Glimpse Inside</div>
+    <h2 class="story-heading reveal reveal-delay-1">The <em style="font-style:italic;color:var(--terracotta)">spaces</em> await.</h2>
+  </div>
+  <div class="gallery-scroll" id="galleryScroll">
+    <div class="gallery-card">
+      <div class="gallery-card-bg"></div>
+      <svg class="gallery-card-deco" viewBox="0 0 100 120" fill="none"><ellipse cx="50" cy="60" rx="30" ry="55" fill="white"/><path d="M50 5 L50 115" stroke="white" stroke-width="0.8" opacity="0.5"/><path d="M50 40 C35 32 20 28 15 20" stroke="white" stroke-width="0.5" opacity="0.4"/><path d="M50 40 C65 32 80 28 85 20" stroke="white" stroke-width="0.5" opacity="0.4"/></svg>
+      <div class="gallery-card-inner"><div class="gallery-tag">The Garden</div><div class="gallery-title">Where mornings bloom</div></div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-card-bg"></div>
+      <svg class="gallery-card-deco" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="38" r="22" fill="white" opacity="0.7"/><circle cx="50" cy="38" r="9" fill="white" opacity="0.5"/><path d="M50 60 L50 95" stroke="white" stroke-width="1.2" opacity="0.5"/></svg>
+      <div class="gallery-card-inner"><div class="gallery-tag">The Mural</div><div class="gallery-title">Lagos' most photographed wall</div></div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-card-bg"></div>
+      <svg class="gallery-card-deco" viewBox="0 0 100 100" fill="none"><path d="M15 50 Q50 10 85 50 Q50 90 15 50Z" fill="white" opacity="0.5"/><path d="M30 50 Q50 25 70 50 Q50 75 30 50Z" fill="white" opacity="0.4"/></svg>
+      <div class="gallery-card-inner"><div class="gallery-tag">The Spa</div><div class="gallery-title">Restore in the garden</div></div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-card-bg"></div>
+      <svg class="gallery-card-deco" viewBox="0 0 100 100" fill="none"><rect x="20" y="20" width="60" height="60" rx="1" stroke="white" stroke-width="1.2" opacity="0.5"/><path d="M35 50 L65 50 M50 35 L50 65" stroke="white" stroke-width="1" opacity="0.4"/></svg>
+      <div class="gallery-card-inner"><div class="gallery-tag">Events</div><div class="gallery-title">300 guests, one occasion</div></div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-card-bg"></div>
+      <svg class="gallery-card-deco" viewBox="0 0 100 80" fill="none"><path d="M10 65 Q30 15 50 25 Q70 35 90 5" stroke="white" stroke-width="1.5" opacity="0.6" fill="none"/><circle cx="50" cy="25" r="4" fill="white" opacity="0.6"/><circle cx="90" cy="5" r="3" fill="white" opacity="0.5"/></svg>
+      <div class="gallery-card-inner"><div class="gallery-tag">Rooftop</div><div class="gallery-title">Lagos skyline at dusk</div></div>
+    </div>
+  </div>
+  <div class="gallery-hint reveal" style="margin-top:2rem">← Drag to explore the spaces →</div>
+</section>
+
+<!-- Story -->
+<section class="story-section">
+  <div class="story-visual">
+    <div class="story-visual-inner" id="parallaxBg">
+      <svg class="garden-illustration" viewBox="0 0 500 600" fill="none">
+        <ellipse cx="250" cy="320" rx="90" ry="160" fill="rgba(138,158,122,.25)"/>
+        <path d="M250 480 L250 160" stroke="rgba(138,158,122,.5)" stroke-width="2"/>
+        <path d="M250 350 C200 320 140 290 110 240" stroke="rgba(138,158,122,.4)" stroke-width="1.5"/>
+        <path d="M250 350 C300 320 360 290 390 240" stroke="rgba(138,158,122,.4)" stroke-width="1.5"/>
+        <path d="M250 420 C190 390 130 350 100 290" stroke="rgba(138,158,122,.3)" stroke-width="1"/>
+        <path d="M250 420 C310 390 370 350 400 290" stroke="rgba(138,158,122,.3)" stroke-width="1"/>
+        <ellipse cx="100" cy="380" rx="55" ry="100" fill="rgba(232,168,156,.2)" transform="rotate(-15 100 380)"/>
+        <path d="M100 480 L115 280" stroke="rgba(232,168,156,.4)" stroke-width="1.5"/>
+        <ellipse cx="400" cy="360" rx="50" ry="90" fill="rgba(201,169,110,.2)" transform="rotate(12 400 360)"/>
+        <path d="M400 450 L388 270" stroke="rgba(201,169,110,.4)" stroke-width="1.5"/>
+        <circle cx="250" cy="160" r="20" fill="rgba(232,168,156,.5)"/>
+        <circle cx="250" cy="160" r="8" fill="rgba(201,107,74,.6)"/>
+        <circle cx="110" cy="240" r="14" fill="rgba(232,168,156,.4)"/>
+        <circle cx="390" cy="240" r="12" fill="rgba(201,169,110,.5)"/>
+        <path d="M50 480 Q250 470 450 480" stroke="rgba(138,158,122,.3)" stroke-width="1"/>
+        <text x="250" y="560" text-anchor="middle" fill="rgba(138,158,122,.15)" font-family="serif" font-size="32" letter-spacing="10">JARDIN</text>
+      </svg>
+    </div>
+  </div>
+  <div class="story-content">
+    <div class="section-label reveal">Our Story</div>
+    <h2 class="story-heading reveal reveal-delay-1">Where Lagos<br>comes to <em>bloom.</em></h2>
+    <p class="story-body reveal reveal-delay-2">Jardin was born from a simple belief — that extraordinary food deserves an extraordinary setting. A living, breathing garden at the heart of Victoria Island, where every meal is framed by nature, light, and intention.</p>
+    <p class="story-body reveal reveal-delay-2" style="margin-top:1rem">Four experiences. One address. A destination Lagos has never seen before.</p>
+    <div class="story-accent reveal reveal-delay-3">
+      <div class="story-stat"><div class="story-stat-num">4</div><div class="story-stat-label">Unique Venues</div></div>
+      <div class="story-stat"><div class="story-stat-num">300+</div><div class="story-stat-label">Event Capacity</div></div>
+      <div class="story-stat"><div class="story-stat-num">1</div><div class="story-stat-label">Address in VI</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Venues -->
+<div class="venues-strip">
+  <div class="venue-item reveal"><div class="venue-emoji">🌿</div><div class="venue-name">Restaurant</div><div class="venue-tag">Garden Dining</div></div>
+  <div class="venue-item reveal reveal-delay-1"><div class="venue-emoji">🌸</div><div class="venue-name">Spa</div><div class="venue-tag">Restore & Refresh</div></div>
+  <div class="venue-item reveal reveal-delay-2"><div class="venue-emoji">✨</div><div class="venue-name">Events</div><div class="venue-tag">300+ Capacity</div></div>
+  <div class="venue-item reveal reveal-delay-3"><div class="venue-emoji">☀️</div><div class="venue-name">Rooftop</div><div class="venue-tag">Lagos Skyline</div></div>
+</div>
+
+<!-- Menu -->
+<section class="menu-section" id="menu">
+  <div class="section-label reveal">A Taste of What's Coming</div>
+  <h2 class="menu-heading reveal reveal-delay-1">The <em>Menu</em></h2>
+  <p class="menu-intro reveal reveal-delay-2">A curated preview — full menu revealed at opening</p>
+  <div class="menu-tabs reveal reveal-delay-2">
+    <button class="menu-tab active" onclick="switchTab(this,'breakfast')">Breakfast</button>
+    <button class="menu-tab" onclick="switchTab(this,'lunch')">Lunch</button>
+    <button class="menu-tab" onclick="switchTab(this,'drinks')">Drinks</button>
+  </div>
+  <div class="menu-grid" id="menuGrid">
+    <div class="menu-item" data-num="01"><div class="menu-item-tag">Garden Fresh</div><div class="menu-item-name">The Jardin Morning Plate</div><div class="menu-item-desc">Slow-scrambled eggs, herb oil, micro greens from the house garden, grilled sourdough, and house-cured salmon.</div><div class="menu-item-price">₦18,500</div></div>
+    <div class="menu-item" data-num="02"><div class="menu-item-tag">Signature</div><div class="menu-item-name">Botanical French Toast</div><div class="menu-item-desc">Thick-cut brioche, hibiscus-infused cream, fresh seasonal berries, lavender honey, edible blooms.</div><div class="menu-item-price">₦15,000</div></div>
+    <div class="menu-item" data-num="03"><div class="menu-item-tag">Afro-Fusion</div><div class="menu-item-name">Ogi & Akara Revival</div><div class="menu-item-desc">Elevated traditional breakfast — silky ogi with tiger nut milk, crispy akara, chili-glazed plantain.</div><div class="menu-item-price">₦12,500</div></div>
+    <div class="menu-item" data-num="04"><div class="menu-item-tag">Light & Fresh</div><div class="menu-item-name">Garden Acai Bowl</div><div class="menu-item-desc">Imported acai, house granola, fresh tropical fruits, honey drizzle, edible flowers from the garden.</div><div class="menu-item-price">₦14,000</div></div>
+    <div class="menu-item" data-num="05"><div class="menu-item-tag">For the Table</div><div class="menu-item-name">The Full Jardin Spread</div><div class="menu-item-desc">A sharing feast — pastry basket, seasonal preserves, charcuterie, three egg preparations, garden juice trio.</div><div class="menu-item-price">₦45,000</div></div>
+    <div class="menu-item" data-num="06"><div class="menu-item-tag">Drinks</div><div class="menu-item-name">Morning Garden Elixir</div><div class="menu-item-desc">Cold-pressed cucumber, mint, green apple, and ginger. A ritual in a glass. Non-alcoholic.</div><div class="menu-item-price">₦7,500</div></div>
+  </div>
+  <div class="menu-cta reveal" style="margin-top:3rem;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:var(--sage);">Full menu unveiled at opening — join the waitlist for early access ↓</div>
+</section>
+
+<!-- Experience -->
+<section class="experience-section" id="experience">
+  <div class="experience-header">
+    <div class="section-label reveal">The Jardin Moments</div>
+    <h2 class="experience-heading reveal reveal-delay-1">Designed to be <em>shared.</em></h2>
+  </div>
+  <div class="experience-grid">
+    <div class="exp-card reveal"><div class="exp-card-inner"><div class="exp-icon">🌺</div><div class="exp-card-label">Signature Feature</div><div class="exp-card-title">The Floral Mural Wall</div><div class="exp-card-desc">Floor-to-ceiling blooms in Jardin's signature palette. The most-photographed wall in Lagos.</div></div></div>
+    <div class="exp-card reveal reveal-delay-1"><div class="exp-card-inner"><div class="exp-icon">🌸</div><div class="exp-card-label">Interactive Feature</div><div class="exp-card-title">The Garden Swing</div><div class="exp-card-desc">Draped in fresh flowers, bathed in natural light. Guests book tables just for this moment.</div></div></div>
+    <div class="exp-card reveal reveal-delay-2"><div class="exp-card-inner"><div class="exp-icon">☀️</div><div class="exp-card-label">Daily Ritual</div><div class="exp-card-title">The Jardin Table</div><div class="exp-card-desc">One table, best light, styled fresh every morning. The Lagos breakfast photo that stops the scroll.</div></div></div>
+  </div>
+</section>
+
+<!-- Quotes -->
+<section class="quote-section">
+  <div class="quote-carousel reveal">
+    <div class="quote-slide active"><blockquote>"Lagos has always deserved a place where the table is as beautiful as the food upon it."</blockquote><div class="quote-source">The Vision · Jardin Lagos</div></div>
+    <div class="quote-slide"><blockquote>"A garden in the heart of Victoria Island — where every morning is worth photographing."</blockquote><div class="quote-source">On the Space · Jardin Lagos</div></div>
+    <div class="quote-slide"><blockquote>"Four venues. One address. A destination that earns its place in Lagos lore."</blockquote><div class="quote-source">On the Experience · Jardin Lagos</div></div>
+    <div class="quote-dots">
+      <div class="quote-dot active" onclick="goToQuote(0)"></div>
+      <div class="quote-dot" onclick="goToQuote(1)"></div>
+      <div class="quote-dot" onclick="goToQuote(2)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Social -->
+<section class="social-section">
+  <div class="social-label reveal">Already Watching</div>
+  <div class="social-stats reveal reveal-delay-1">
+    <div class="social-stat"><div class="social-stat-num" id="followerCount">0</div><div class="social-stat-label">Following on Instagram</div></div>
+    <div class="social-stat"><div class="social-stat-num" id="waitlistCount">0</div><div class="social-stat-label">On the Waitlist</div></div>
+    <div class="social-stat"><div class="social-stat-num">1</div><div class="social-stat-label">Address in VI</div></div>
+  </div>
+  <div class="social-links reveal reveal-delay-2">
+    <a href="#" class="social-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @jardinlagos
+    </a>
+    <a href="#" class="social-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.87a8.27 8.27 0 004.84 1.55V7a4.85 4.85 0 01-1.07-.31z"/></svg>
+      @jardinlagos
+    </a>
+  </div>
+</section>
+
+<!-- Waitlist -->
+<section class="waitlist-section" id="waitlist">
+  <div class="waitlist-eyebrow">Be First Through the Garden Gate</div>
+  <h2 class="waitlist-heading">Reserve your<br><em>moment at Jardin.</em></h2>
+  <p class="waitlist-sub">Priority reservations, early menu access, and exclusive opening invitations — for those who join first.</p>
+  <div class="waitlist-form">
+    <div id="formFields">
+      <div class="form-fields">
+        <div class="form-field"><input class="form-input" type="text" placeholder="Your name" id="nameInput"></div>
+        <div class="form-field"><input class="form-input" type="email" placeholder="Email address" id="emailInput"></div>
+        <div class="form-field">
+          <select class="form-select" id="venueSelect">
+            <option value="" disabled selected>I'm most excited about…</option>
+            <option>The Restaurant</option>
+            <option>The Spa</option>
+            <option>Events & Private Dining</option>
+            <option>The Rooftop</option>
+            <option>All of the above</option>
+          </select>
+        </div>
+      </div>
+      <button class="form-btn" onclick="handleSubmit()">Reserve My Spot at Jardin</button>
+      <div class="form-note">No spam. Just garden updates, early access & opening invitations.</div>
+      <div class="form-counter">Join <span id="signupNum">247</span> others already on the list</div>
+    </div>
+    <div class="form-success" id="formSuccess">
+      <div class="form-success-icon">🌸</div>
+      <div class="form-success-text">Welcome to Jardin.</div>
+      <div class="form-success-sub">We'll be in touch before the garden opens.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">JARDIN</div>
+  <div class="footer-sub">Victoria Island · Lagos, Nigeria · Opening 2026</div>
+  <div class="footer-links">
+    <a href="#home" class="footer-link">Home</a>
+    <a href="#menu" class="footer-link">Menu</a>
+    <a href="#experience" class="footer-link">Experience</a>
+    <a href="#waitlist" class="footer-link">Waitlist</a>
+  </div>
+  <div class="footer-credit">Digital presence by <a href="https://dotxlabs.com" target="_blank">DOTxLabs</a></div>
+</footer>
+
+<script>
+// LOADER
+window.addEventListener('load', () => setTimeout(() => document.getElementById('loader').classList.add('hidden'), 2500));
+
+// CURSOR + PETAL TRAIL
+const cursor = document.getElementById('cursor'), ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+const petals=['🌸','🌺','✿','❀','🌼'];
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx-4+'px'; cursor.style.top=my-4+'px';
+  if(Math.random()>.87) spawnPetal(mx,my);
+});
+const tick = () => { rx+=(mx-rx)*.1; ry+=(my-ry)*.1; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(tick); };
+tick();
+function spawnPetal(x,y) {
+  const p=document.createElement('div'); p.className='petal-trail';
+  p.textContent=petals[Math.floor(Math.random()*petals.length)];
+  p.style.left=x-8+'px'; p.style.top=y-8+'px';
+  document.body.appendChild(p); setTimeout(()=>p.remove(),900);
+}
+document.querySelectorAll('a,button,.menu-tab,.venue-item,.gallery-card,.exp-card,.quote-dot').forEach(el => {
+  el.addEventListener('mouseenter',()=>ring.classList.add('hovered'));
+  el.addEventListener('mouseleave',()=>ring.classList.remove('hovered'));
+});
+
+// NAV
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60));
+
+// AMBIENT SOUND (synthesized tones, no files)
+let audioCtx,playing=false,gainNode,oscs=[];
+function toggleSound(){
+  const btn=document.getElementById('soundBtn');
+  if(!playing){
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    gainNode=audioCtx.createGain(); gainNode.gain.setValueAtTime(0,audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.05,audioCtx.currentTime+2.5);
+    gainNode.connect(audioCtx.destination);
+    [[196,.25],[261,.18],[329,.12],[392,.08],[130,.15]].forEach(([f,v])=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=f; g.gain.value=v;
+      o.connect(g); g.connect(gainNode); o.start(); oscs.push(o);
+    });
+    playing=true; btn.classList.add('playing');
+  } else {
+    gainNode.gain.linearRampToValueAtTime(0,audioCtx.currentTime+1.5);
+    setTimeout(()=>{oscs.forEach(o=>o.stop());oscs=[];},1600);
+    playing=false; btn.classList.remove('playing');
+  }
+}
+
+// COUNTDOWN (target: Sept 1, 2026)
+const target=new Date('2026-09-01T10:00:00');
+function updateClock(){
+  const d=target-new Date();
+  if(d<=0){['days','hours','minutes','seconds'].forEach(id=>document.getElementById(id).textContent='00');return;}
+  document.getElementById('days').textContent=String(Math.floor(d/86400000)).padStart(2,'0');
+  document.getElementById('hours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');
+  document.getElementById('minutes').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
+  document.getElementById('seconds').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');
+}
+updateClock(); setInterval(updateClock,1000);
+
+// GALLERY DRAG
+const gs=document.getElementById('galleryScroll');
+let dragging=false,startX,sl;
+gs.addEventListener('mousedown',e=>{dragging=true;startX=e.pageX-gs.offsetLeft;sl=gs.scrollLeft;gs.classList.add('dragging');});
+gs.addEventListener('mouseleave',()=>{dragging=false;gs.classList.remove('dragging');});
+gs.addEventListener('mouseup',()=>{dragging=false;gs.classList.remove('dragging');});
+gs.addEventListener('mousemove',e=>{if(!dragging)return;e.preventDefault();gs.scrollLeft=sl-(e.pageX-gs.offsetLeft-startX)*1.5;});
+
+// PARALLAX
+window.addEventListener('scroll',()=>{const pb=document.getElementById('parallaxBg');if(pb)pb.style.transform=`translateY(${window.scrollY*.08}px)`;});
+
+// SCROLL REVEAL
+new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1,rootMargin:'0px 0px -50px 0px'}).observe && document.querySelectorAll('.reveal').forEach(r=>new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1,rootMargin:'0px 0px -50px 0px'}).observe(r));
+
+// QUOTES AUTO-ROTATE
+let cq=0;const slides=document.querySelectorAll('.quote-slide'),dots=document.querySelectorAll('.quote-dot');
+function goToQuote(i){slides[cq].classList.remove('active');dots[cq].classList.remove('active');cq=i;slides[cq].classList.add('active');dots[cq].classList.add('active');}
+setInterval(()=>goToQuote((cq+1)%slides.length),5000);
+
+// COUNTER ANIMATION
+function animCount(id,tgt,dur){
+  const el=document.getElementById(id),s=performance.now();
+  const u=now=>{const p=Math.min((now-s)/dur,1);el.textContent=Math.floor(p*tgt).toLocaleString();if(p<1)requestAnimationFrame(u);};
+  requestAnimationFrame(u);
+}
+new IntersectionObserver(entries=>{if(entries[0].isIntersecting){animCount('followerCount',4800,2000);animCount('waitlistCount',247,1500);}},{threshold:.3}).observe(document.querySelector('.social-section'));
+
+// MENU TABS
+const menuData={
+  breakfast:[
+    {num:'01',tag:'Garden Fresh',name:'The Jardin Morning Plate',desc:'Slow-scrambled eggs, herb oil, micro greens from the house garden, grilled sourdough, and house-cured salmon.',price:'₦18,500'},
+    {num:'02',tag:'Signature',name:'Botanical French Toast',desc:'Thick-cut brioche, hibiscus-infused cream, fresh seasonal berries, lavender honey, edible blooms.',price:'₦15,000'},
+    {num:'03',tag:'Afro-Fusion',name:'Ogi & Akara Revival',desc:'Elevated traditional breakfast — silky ogi with tiger nut milk, crispy akara, chili-glazed plantain.',price:'₦12,500'},
+    {num:'04',tag:'Light & Fresh',name:'Garden Acai Bowl',desc:'Imported acai, house granola, fresh tropical fruits, honey drizzle, edible flowers from the garden.',price:'₦14,000'},
+    {num:'05',tag:'For the Table',name:'The Full Jardin Spread',desc:'A sharing feast — pastry basket, seasonal preserves, charcuterie, three egg preparations, garden juice trio.',price:'₦45,000'},
+    {num:'06',tag:'Drinks',name:'Morning Garden Elixir',desc:'Cold-pressed cucumber, mint, green apple, and ginger. A ritual in a glass. Non-alcoholic.',price:'₦7,500'},
+  ],
+  lunch:[
+    {num:'01',tag:'Garden Bowl',name:'Roasted Beets & Labneh',desc:'Honey-roasted beets, whipped labneh, walnut crumb, micro herbs, house vinaigrette, warm flatbread.',price:'₦22,000'},
+    {num:'02',tag:'Signature',name:'Jardin Grilled Chicken',desc:'Free-range chicken, chimichurri, cassava purée, blistered tomatoes, crispy capers, garden leaves.',price:'₦28,500'},
+    {num:'03',tag:'Afro-Fusion',name:'Jollof Risotto',desc:'Short-grain rice, smoked tomato base, Parmesan, truffle oil, grilled tiger prawns, pickled onion.',price:'₦34,000'},
+    {num:'04',tag:'Vegan',name:'The Garden Harvest Plate',desc:'Seasonal roasted vegetables, hummus, tabbouleh, lentil salad, house-baked flatbread, herb oil.',price:'₦19,500'},
+    {num:'05',tag:'Seafood',name:'Pan-Seared Lagos Barracuda',desc:'Local barracuda, coconut beurre blanc, charred leeks, pepper medley, pickled green tomato salsa.',price:'₦38,000'},
+    {num:'06',tag:'Dessert',name:'Hibiscus Panna Cotta',desc:'Set cream with hibiscus reduction, fresh mango, sesame tuile, dried edible petals.',price:'₦9,500'},
+  ],
+  drinks:[
+    {num:'01',tag:'Signature',name:'Garden Spritz',desc:'Aperol, elderflower liqueur, cucumber shrub, prosecco, fresh herbs, edible flowers.',price:'₦14,000'},
+    {num:'02',tag:'Non-Alcoholic',name:'Hibiscus Cooler',desc:'House-brewed hibiscus, ginger, lemon, mint, sparkling water. Lagos in a glass.',price:'₦7,500'},
+    {num:'03',tag:'Cocktail',name:'Jardin Mule',desc:'Premium vodka, house ginger beer, lime, cucumber, garden mint, crushed ice.',price:'₦16,500'},
+    {num:'04',tag:'Non-Alcoholic',name:'Morning Garden Elixir',desc:'Cold-pressed cucumber, green apple, ginger, lemon, spirulina. A ritual, not just a drink.',price:'₦7,500'},
+    {num:'05',tag:'Wine',name:'Curated Wine List',desc:'A rotating selection of Old and New World wines curated for the Jardin experience.',price:'From ₦18,000'},
+    {num:'06',tag:'Coffee',name:'Single Origin Pour Over',desc:'Sourced Ethiopian or Kenyan beans, prepared with intention. Served with house cardamom shortbread.',price:'₦6,500'},
+  ]
+};
+function switchTab(btn,cat){
+  document.querySelectorAll('.menu-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+  const g=document.getElementById('menuGrid'); g.style.opacity='0'; g.style.transform='translateY(10px)';
+  setTimeout(()=>{
+    g.innerHTML=menuData[cat].map(i=>`<div class="menu-item" data-num="${i.num}"><div class="menu-item-tag">${i.tag}</div><div class="menu-item-name">${i.name}</div><div class="menu-item-desc">${i.desc}</div><div class="menu-item-price">${i.price}</div></div>`).join('');
+    g.style.transition='opacity .4s ease,transform .4s ease'; g.style.opacity='1'; g.style.transform='none';
+  },250);
+}
+
+// WAITLIST
+let count=247;
+function handleSubmit(){
+  const n=document.getElementById('nameInput').value.trim(), e=document.getElementById('emailInput').value.trim();
+  if(!n){document.getElementById('nameInput').placeholder='Please enter your name';return;}
+  if(!e||!e.includes('@')){document.getElementById('emailInput').placeholder='Please enter a valid email';return;}
+  document.getElementById('formFields').style.display='none';
+  document.getElementById('formSuccess').classList.add('visible');
+  count++; document.getElementById('signupNum').textContent=count;
+}
+</script>
+</body>
+</html>
